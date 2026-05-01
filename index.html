@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WASTELAND CHRONICLES</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- SCREENS -->
+<div id="screen-title" class="screen active">
+  <div class="title-bg"></div>
+  <div class="title-content">
+    <div class="title-logo">
+      <div class="title-main">WASTELAND</div>
+      <div class="title-sub">CHRONICLES</div>
+      <div class="title-tagline">A Post-Apocalyptic RPG</div>
+    </div>
+    <div class="title-menu">
+      <button class="menu-btn" id="btn-new-game">⚔ NEW GAME</button>
+      <button class="menu-btn" id="btn-continue" style="display:none">▶ CONTINUE</button>
+      <button class="menu-btn muted" id="btn-how">? HOW TO PLAY</button>
+    </div>
+    <div class="title-credits">Music & SFX © Craftpix.net | v1.0</div>
+  </div>
+</div>
+
+<div id="screen-howto" class="screen">
+  <div class="howto-box">
+    <h2>HOW TO PLAY</h2>
+    <div class="howto-grid">
+      <div class="howto-section">
+        <h3>⌨ CONTROLS</h3>
+        <p><b>WASD / Arrow Keys</b> — Move hero</p>
+        <p><b>Space / Z</b> — Attack</p>
+        <p><b>X / Shift</b> — Use skill</p>
+        <p><b>E</b> — Interact / Pick up</p>
+        <p><b>I</b> — Inventory</p>
+        <p><b>K</b> — Skill tree</p>
+        <p><b>M</b> — Map</p>
+        <p><b>Esc</b> — Pause / Back</p>
+      </div>
+      <div class="howto-section">
+        <h3>⚡ GAMEPLAY</h3>
+        <p>Explore the open world across 4 zones</p>
+        <p>Kill enemies to gain XP and level up</p>
+        <p>Collect weapons, armor and medicine</p>
+        <p>Upgrade stats and unlock skills</p>
+        <p>Find the boss of each zone to progress</p>
+        <p>Use healing items when HP is low</p>
+      </div>
+      <div class="howto-section">
+        <h3>📊 STATS</h3>
+        <p><b>STR</b> — Melee damage</p>
+        <p><b>AGI</b> — Speed & dodge</p>
+        <p><b>INT</b> — Skill power</p>
+        <p><b>VIT</b> — Max HP</p>
+        <p><b>Each level</b> → +3 stat points</p>
+      </div>
+    </div>
+    <button class="menu-btn" id="btn-howto-back">← BACK</button>
+  </div>
+</div>
+
+<div id="screen-game" class="screen">
+  <!-- HUD TOP -->
+  <div id="hud">
+    <div id="hud-left">
+      <div id="hud-portrait">
+        <canvas id="portrait-canvas" width="48" height="48"></canvas>
+      </div>
+      <div id="hud-bars">
+        <div class="bar-row">
+          <span class="bar-label">HP</span>
+          <div class="bar-track"><div id="bar-hp" class="bar hp-bar"></div></div>
+          <span id="hp-text" class="bar-val">100/100</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">EP</span>
+          <div class="bar-track"><div id="bar-ep" class="bar ep-bar"></div></div>
+          <span id="ep-text" class="bar-val">50/50</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">XP</span>
+          <div class="bar-track"><div id="bar-xp" class="bar xp-bar"></div></div>
+          <span id="xp-text" class="bar-val">0/100</span>
+        </div>
+      </div>
+      <div id="hud-level">
+        <span class="lv-label">LV</span>
+        <span id="hud-lv">1</span>
+      </div>
+    </div>
+    <div id="hud-center">
+      <div id="zone-name">ZONE 1 — RUINED PEAKS</div>
+      <div id="kill-counter">Kills: <span id="kill-count">0</span></div>
+    </div>
+    <div id="hud-right">
+      <div id="hud-weapon">
+        <img id="hud-weapon-icon" src="" alt=""/>
+        <span id="hud-weapon-name">Bare Hands</span>
+      </div>
+      <div id="hud-skills-bar"></div>
+      <div id="hud-coins">💰 <span id="coin-count">0</span></div>
+    </div>
+  </div>
+
+  <!-- GAME VIEWPORT -->
+  <div id="game-viewport">
+    <canvas id="game-canvas"></canvas>
+    <div id="damage-numbers"></div>
+    <div id="interact-hint" class="hidden">Press E to pick up</div>
+    <div id="area-transition" class="hidden"></div>
+  </div>
+
+  <!-- MINIMAP -->
+  <div id="minimap-wrap">
+    <canvas id="minimap-canvas" width="150" height="150"></canvas>
+    <div id="minimap-label">MAP (M)</div>
+  </div>
+
+  <!-- HOTBAR -->
+  <div id="hotbar">
+    <div class="hotkey-slot" id="slot-attack" title="Attack [Space/Z]">
+      <span class="hotkey-label">Z</span>
+      <img src="" id="hotbar-attack-icon" alt="⚔"/>
+      <div class="cooldown-overlay" id="cd-attack"></div>
+    </div>
+    <div class="hotkey-slot" id="slot-skill1" title="Skill 1 [X]">
+      <span class="hotkey-label">X</span>
+      <img src="" id="hotbar-skill1-icon" alt=""/>
+      <div class="cooldown-overlay" id="cd-skill1"></div>
+    </div>
+    <div class="hotkey-slot" id="slot-skill2" title="Skill 2 [C]">
+      <span class="hotkey-label">C</span>
+      <img src="" id="hotbar-skill2-icon" alt=""/>
+      <div class="cooldown-overlay" id="cd-skill2"></div>
+    </div>
+    <div class="hotkey-slot heal" id="slot-heal" title="Heal [H]">
+      <span class="hotkey-label">H</span>
+      <img src="" id="hotbar-heal-icon" alt="❤"/>
+      <span id="heal-count" class="item-count">0</span>
+    </div>
+  </div>
+
+  <!-- PAUSE MENU -->
+  <div id="pause-menu" class="overlay hidden">
+    <div class="overlay-box">
+      <h2>PAUSED</h2>
+      <button class="menu-btn" id="btn-resume">▶ RESUME</button>
+      <button class="menu-btn" id="btn-open-inv">🎒 INVENTORY (I)</button>
+      <button class="menu-btn" id="btn-open-skills">⚡ SKILLS (K)</button>
+      <button class="menu-btn" id="btn-open-stats">📊 STATS</button>
+      <button class="menu-btn muted" id="btn-quit">✕ QUIT TO MENU</button>
+    </div>
+  </div>
+
+  <!-- INVENTORY PANEL -->
+  <div id="panel-inventory" class="side-panel hidden">
+    <div class="panel-header">
+      <h2>🎒 INVENTORY</h2>
+      <button class="close-btn" data-panel="inventory">✕</button>
+    </div>
+    <div class="panel-body">
+      <div id="inv-equipped">
+        <h3>EQUIPPED</h3>
+        <div id="equip-slots">
+          <div class="equip-slot" id="equip-weapon" data-slot="weapon">
+            <span class="equip-label">WEAPON</span>
+            <img src="" id="eq-weapon-img" alt=""/>
+            <span id="eq-weapon-name">–</span>
+          </div>
+          <div class="equip-slot" id="equip-armor" data-slot="armor">
+            <span class="equip-label">ARMOR</span>
+            <img src="" id="eq-armor-img" alt=""/>
+            <span id="eq-armor-name">–</span>
+          </div>
+        </div>
+        <div id="inv-stats-summary"></div>
+      </div>
+      <div id="inv-bag">
+        <h3>BAG <span id="inv-bag-count"></span></h3>
+        <div id="inv-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKILL TREE PANEL -->
+  <div id="panel-skills" class="side-panel hidden">
+    <div class="panel-header">
+      <h2>⚡ SKILL TREE</h2>
+      <span id="skill-points-display">Points: <b id="sp-count">0</b></span>
+      <button class="close-btn" data-panel="skills">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="skill-tabs">
+        <button class="skill-tab active" data-branch="warrior">⚔ WARRIOR</button>
+        <button class="skill-tab" data-branch="ranger">🏹 RANGER</button>
+        <button class="skill-tab" data-branch="tech">🔧 TECH</button>
+      </div>
+      <div id="skill-tree-grid"></div>
+    </div>
+  </div>
+
+  <!-- STAT PANEL -->
+  <div id="panel-stats" class="side-panel hidden">
+    <div class="panel-header">
+      <h2>📊 CHARACTER</h2>
+      <button class="close-btn" data-panel="stats">✕</button>
+    </div>
+    <div class="panel-body">
+      <div id="char-name-display" class="char-name-big"></div>
+      <div id="stat-allocate">
+        <div class="stat-point-pool">Free Points: <b id="free-points">0</b></div>
+        <div id="stat-rows"></div>
+      </div>
+      <div id="stat-derived"></div>
+    </div>
+  </div>
+
+  <!-- LEVEL UP OVERLAY -->
+  <div id="levelup-overlay" class="overlay hidden">
+    <div class="overlay-box levelup-box">
+      <div class="levelup-star">★</div>
+      <h2>LEVEL UP!</h2>
+      <div id="levelup-info"></div>
+      <button class="menu-btn" id="btn-levelup-ok">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- LOOT POPUP -->
+  <div id="loot-popup" class="overlay hidden">
+    <div class="overlay-box loot-box">
+      <h3 id="loot-title">ITEM FOUND</h3>
+      <div id="loot-item-display"></div>
+      <div class="loot-buttons">
+        <button class="menu-btn" id="btn-loot-take">TAKE</button>
+        <button class="menu-btn muted" id="btn-loot-skip">SKIP</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ITEM TOOLTIP -->
+  <div id="item-tooltip" class="hidden"></div>
+</div>
+
+<!-- GAME OVER -->
+<div id="screen-gameover" class="screen">
+  <div class="gameover-content">
+    <div class="gameover-title">YOU DIED</div>
+    <div id="gameover-stats"></div>
+    <button class="menu-btn" id="btn-respawn">⟳ RESPAWN AT CHECKPOINT</button>
+    <button class="menu-btn muted" id="btn-go-menu">✕ MAIN MENU</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
